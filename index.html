@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anastasia Petrolay — Front-end Developer</title>
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+
+    /* Плавный скролл + отступ под закреплённую шапку */
+    /* Отступ под шапку + плавное увеличение всего сайта на очень больших мониторах (от ~2200px) */
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 4.5rem;
+      font-size: clamp(16px, calc(16px + (100vw - 2200px) * 0.01), 24px);
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    body { margin: 0; background: #000; font-family: ui-sans-serif, system-ui, sans-serif; overflow-x: hidden; }
+
+    .liquid-glass {
+      background: rgba(255, 255, 255, 0.01);
+      background-blend-mode: luminosity;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: none;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .liquid-glass::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1.4px;
+      background: linear-gradient(180deg,
+        rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+        rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+        rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    svg.icon { fill: none; stroke: currentColor; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Фото без фона (прозрачный PNG), низ плавно растворяется в фоне сайта */
+    .avatar-soft {
+      -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+    }
+
+    /* Эффект при наведении на карточки проектов (без подъёма) */
+    .project-card {
+      transition: background-color 0.4s ease, box-shadow 0.4s ease;
+    }
+    .project-card .card-img {
+      transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), filter 0.5s ease;
+      filter: brightness(0.85) saturate(0.95);
+    }
+    .project-card h3,
+    .project-card p {
+      transition: color 0.4s ease, letter-spacing 0.4s ease;
+    }
+    /* Световой блик, пробегающий по карточке */
+    .project-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -60%;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(100deg, transparent, rgba(255,255,255,0.28), transparent);
+      transform: skewX(-18deg);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .project-card:hover {
+      background: rgba(253, 223, 71, 0.977); /* Полупрозрачный жёлтый фон */
+      box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.5),
+        0 0 0 1px rgba(253, 224, 71, 0.7),
+        0 0 35px rgba(253, 224, 71, 0.35);
+    }
+    .project-card:hover h3,
+    .project-card:hover p {
+      color: #000000; /* Чёрный цвет текста */
+    }
+    .project-card:hover h3 {
+      letter-spacing: 0.06em;
+    }
+    .project-card:hover .card-img {
+      transform: scale(1.08);
+      filter: brightness(1.05) saturate(1.1);
+    }
+    .project-card:hover::after {
+      opacity: 1;
+      animation: cardSheen 0.9s ease forwards;
+    }
+    .hero-lead {
+      text-shadow: 0 1px 12px rgba(0, 0, 0, 0.75);
+      padding-left: 1rem;
+      text-align: center;
+    }
+    @media (min-width: 768px) {
+      .hero-lead { padding-left: 1.25rem; }
+    }
+    @keyframes cardSheen {
+      from { left: -60%; }
+      to   { left: 130%; }
+    }
+
+    /* Анимации жёлтых цветов */
+    .flower-particle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      filter: drop-shadow(0 0 8px rgba(253, 224, 71, 0.45));
+      will-change: transform, opacity;
+    }
+
+    @keyframes flowerTrail {
+      0% {
+        opacity: 0.95;
+        transform: translate(-50%, -50%) scale(0.4) rotate(0deg);
+      }
+      40% {
+        opacity: 0.9;
+        transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1) rotate(60deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--dx) * 1.8), calc(-50% + var(--dy) * 1.8 + 14px)) scale(0.2) rotate(140deg);
+      }
+    }
+
+    @keyframes flowerBloom {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.15) rotate(-30deg);
+      }
+      25% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.15) rotate(15deg);
+      }
+      60% {
+        opacity: 0.95;
+        transform: translate(-50%, -50%) scale(1) rotate(35deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, calc(-50% - 18px)) scale(0.6) rotate(75deg);
+      }
+    }
+
+    /* ============================================================
+       СЕКЦИЯ 3 — «Технологии, которыми я владею»
+       ============================================================ */
+    .nav-link {
+      position: relative;
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 0.875rem;
+      transition: color 0.3s ease;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      left: 0; bottom: -4px;
+      width: 100%; height: 1px;
+      background: #FDE047;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+    .nav-link:hover { color: #fff; }
+    .nav-link:hover::after { transform: scaleX(1); }
+
+    .tech-section {
+      position: relative;
+      z-index: 10;
+      background: #F7F3E8;            /* светлый тёплый фон — контраст с тёмной секцией проектов */
+      color: #111;
+    }
+    /* Обёртка для фоновых пятен (обрезает их, но не волну сверху) */
+    .tech-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* --- Волнистый переход между секциями --- */
+    .wave-divider {
+      --wl: 1200px;                 /* длина одного периода волны */
+      position: absolute;
+      left: 0; right: 0;
+      top: -99px;
+      height: 100px;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .wave {
+      position: absolute;
+      left: 0; right: 0; bottom: -1px;
+      height: 100%;
+      background-repeat: repeat-x;
+      background-size: var(--wl) 100%;
+      background-position: 0 100%;
+      will-change: background-position;
+    }
+    /* Задняя волна — жёлтая, дальше — полупрозрачная кремовая, передняя — сплошная */
+    .wave-1 {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%23FDE047' fill-opacity='0.6' d='M0,60 C150,0 450,0 600,60 S1050,120 1200,60 L1200,120 L0,120 Z'/%3E%3C/svg%3E");
+      animation: waveFlow 26s linear infinite;
+    }
+    .wave-2 {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%23F7F3E8' fill-opacity='0.55' d='M0,50 C200,110 400,110 600,50 S1000,-10 1200,50 L1200,120 L0,120 Z'/%3E%3C/svg%3E");
+      animation: waveFlowRev 34s linear infinite;
+    }
+    .wave-3 {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%23F7F3E8' d='M0,80 C200,40 400,40 600,80 S1000,120 1200,80 L1200,120 L0,120 Z'/%3E%3C/svg%3E");
+      animation: waveFlow 44s linear infinite;
+    }
+    @keyframes waveFlow    { to { background-position-x: var(--wl); } }
+    @keyframes waveFlowRev { to { background-position-x: calc(var(--wl) * -1); } }
+    @media (max-width: 768px) {
+      .wave-divider { --wl: 700px; height: 64px; top: -63px; }
+    }
+
+    /* Мягкие жёлтые пятна на фоне */
+    .tech-glow {
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(90px);
+      background: rgba(253, 224, 71, 0.35);
+      pointer-events: none;
+    }
+
+    .tech-eyebrow {
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      color: rgba(17, 17, 17, 0.55);
+    }
+
+    /* --- CSS Grid: сетка карточек (компактная) --- */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: 1fr;          /* телефон: по одной в строке */
+      gap: 1rem;
+    }
+    @media (min-width: 640px) {
+      .tech-grid { grid-template-columns: repeat(2, 1fr); }   /* планшет: 2 столбца */
+    }
+    @media (min-width: 1024px) {
+      .tech-grid { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }  /* ПК: 3 в ряд */
+    }
+
+    /* --- Карточка (не двигается при наведении) --- */
+    .tech-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.5rem;
+      padding: 1.25rem 1.5rem;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(17, 17, 17, 0.08);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      /* состояние до появления */
+      opacity: 0;
+      transform: translateY(14px) scale(0.985);
+      filter: blur(6px);
+      transition:
+        opacity 0.9s ease calc(var(--i, 0) * 90ms),
+        transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i, 0) * 90ms),
+        filter 0.9s ease calc(var(--i, 0) * 90ms),
+        background-color 0.45s ease 0s,
+        border-color 0.45s ease 0s,
+        box-shadow 0.45s ease 0s;
+    }
+    .tech-card.is-visible {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+
+    /* Блик, пробегающий по карточке */
+    .tech-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -60%;
+      width: 40%; height: 100%;
+      background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+      transform: skewX(-18deg);
+      opacity: 0;
+      pointer-events: none;
+    }
+    /* Линия-акцент снизу, «вытекает» при наведении */
+    .tech-card .tech-line {
+      position: absolute;
+      left: 0; bottom: 0;
+      height: 3px; width: 100%;
+      background: #111;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .tech-card:hover {
+      background: #FDE047;
+      border-color: rgba(202, 138, 4, 0.55);
+      box-shadow:
+        0 0 0 1px rgba(253, 224, 71, 0.8),
+        0 12px 40px rgba(234, 179, 8, 0.28);
+    }
+    .tech-card:hover::after {
+      opacity: 1;
+      animation: cardSheen 0.9s ease forwards;
+    }
+    .tech-card:hover .tech-line { transform: scaleX(1); }
+
+    /* Иконка */
+    .tech-icon {
+      width: 2.5rem; height: 2.5rem;
+      border-radius: 9999px;
+      display: flex; align-items: center; justify-content: center;
+      background: #111;
+      color: #FDE047;
+      transition: background-color 0.4s ease, color 0.4s ease, box-shadow 0.5s ease;
+    }
+    .tech-icon svg {
+      width: 1.2rem; height: 1.2rem;
+      stroke-width: 1.5;
+      transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .tech-card:hover .tech-icon {
+      box-shadow: 0 0 0 6px rgba(17, 17, 17, 0.1);
+    }
+    .tech-card:hover .tech-icon svg { transform: rotate(-10deg) scale(1.12); }
+
+    .tech-card h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: #111;
+      transition: letter-spacing 0.4s ease;
+    }
+    .tech-card:hover h3 { letter-spacing: 0.05em; }
+    .tech-card p {
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: rgba(17, 17, 17, 0.7);
+      transition: color 0.4s ease;
+    }
+    .tech-card:hover p { color: #111; }
+
+    /* --- Рамка из жёлтых цветочков при наведении на карточку --- */
+    .tech-card:focus-visible { outline: 2px solid #CA8A04; outline-offset: 3px; }
+    .tech-card.is-framed {
+      border-color: rgba(202, 138, 4, 0.6);
+    }
+    .flower-frame {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .frame-flower {
+      position: absolute;
+      transform: translate(-50%, -50%) scale(1) rotate(var(--r, 0deg));
+      filter: drop-shadow(0 0 4px rgba(234, 179, 8, 0.55));
+      animation: frameBloom 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation-delay: var(--d, 0ms);
+    }
+    .frame-flower svg { display: block; width: 100%; height: 100%; }
+    .flower-frame.is-leaving .frame-flower {
+      animation: frameFade 0.35s ease forwards;
+      animation-delay: 0ms;
+    }
+    @keyframes frameBloom {
+      from { opacity: 0; transform: translate(-50%, -50%) scale(0) rotate(-120deg); }
+      to   { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(var(--r, 0deg)); }
+    }
+    @keyframes frameFade {
+      from { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(var(--r, 0deg)); }
+      to   { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(90deg); }
+    }
+
+    /* --- Подсказка над фото (появляется при наведении) --- */
+    .avatar-wrap { position: relative; }
+    .avatar-hint {
+      position: absolute;
+      left: calc(100% + 14px);
+      top: 50%;
+      transform: translate(-8px, -50%);
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.95rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      color: #fff;
+      background: rgba(20, 20, 20, 0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(253, 224, 71, 0.5);
+      box-shadow: 0 0 18px rgba(253, 224, 71, 0.25);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+      transition: opacity 0.35s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .avatar-wrap:hover .avatar-hint,
+    #avatar:focus-visible + .avatar-hint {
+      opacity: 1;
+      transform: translate(0, -50%);
+    }
+    @media (max-width: 480px) {
+      .avatar-hint { padding: 0.3rem 0.7rem; font-size: 0.68rem; }
+    }
+    .avatar-hint-icon {
+      color: #FDE047;
+      display: inline-block;
+      animation: hintSpin 6s linear infinite;
+    }
+    @keyframes hintSpin { to { transform: rotate(360deg); } }
+    #avatar:focus-visible { outline: 2px solid #FDE047; outline-offset: 4px; }
+
+    /* --- Цветочный дождь по всему сайту (при нажатии на фото) --- */
+    .rain-flower {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      filter: drop-shadow(0 0 8px rgba(253, 224, 71, 0.5));
+      will-change: transform, opacity;
+      animation: rainFlower var(--dur, 5s) ease-in-out var(--d, 0s) both;
+    }
+    @keyframes rainFlower {
+      0%   { opacity: 0;   transform: translate(-50%, -50%) scale(0.2) rotate(0deg); }
+      12%  { opacity: 0.7; transform: translate(-50%, -50%) scale(1) rotate(25deg); }
+      45%  { opacity: 0.6; }
+      100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--sx, 0px)), calc(-50% + var(--sy, 60px))) scale(0.85) rotate(var(--rot, 160deg));
+      }
+    }
+
+    /* --- Кнопка «Связаться» --- */
+    .contact-btn {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.25s ease-out, color 0.4s ease, box-shadow 0.4s ease;
+      will-change: transform;
+    }
+    /* «Чернильное» пятно, растёт из точки, где зашёл курсор */
+    .contact-btn .cb-fill {
+      position: absolute;
+      left: var(--mx, 50%);
+      top: var(--my, 50%);
+      width: 30px; height: 30px;
+      margin: -15px 0 0 -15px;
+      border-radius: 50%;
+      background: #FDE047;
+      transform: scale(0);
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .contact-btn:hover .cb-fill,
+    .contact-btn:focus-visible .cb-fill { transform: scale(14); }
+    .contact-btn:hover,
+    .contact-btn:focus-visible {
+      color: #111;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.5), 0 0 28px rgba(253, 224, 71, 0.45);
+    }
+    .contact-btn:focus-visible { outline: 2px solid #FDE047; outline-offset: 3px; }
+    .cb-content {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    /* Пульсирующая точка «на связи» */
+    .cb-dot {
+      width: 0.5rem; height: 0.5rem;
+      border-radius: 9999px;
+      background: #FDE047;
+      animation: dotPulse 2s infinite;
+      transition: background-color 0.4s ease;
+    }
+    .contact-btn:hover .cb-dot,
+    .contact-btn:focus-visible .cb-dot { background: #111; animation: none; }
+    @keyframes dotPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0.65); }
+      70%  { box-shadow: 0 0 0 8px rgba(253, 224, 71, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0); }
+    }
+    .cb-icon { width: 1rem; height: 1rem; stroke-width: 1.5; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+    .contact-btn:hover .cb-icon { transform: rotate(-12deg) scale(1.15); }
+
+    /* --- Окно контактов --- */
+    .contact-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s ease, visibility 0.35s;
+    }
+    .contact-modal.is-open { opacity: 1; visibility: visible; }
+    .contact-panel.liquid-glass {
+      width: 100%;
+      max-width: 26rem;
+      border-radius: 1.75rem;
+      padding: 2rem 1.75rem 1.75rem;
+      color: #fff;
+      background: rgba(18, 18, 18, 0.65);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      transform: translateY(18px) scale(0.94);
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .contact-modal.is-open .contact-panel { transform: none; }
+    .contact-close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      width: 2.25rem; height: 2.25rem;
+      border-radius: 9999px;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease, transform 0.4s ease;
+    }
+    .contact-close:hover { background: #FDE047; color: #111; transform: rotate(90deg); }
+    .contact-close svg { width: 1rem; height: 1rem; stroke-width: 1.5; }
+    .contact-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 1.1rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+    }
+    .contact-row:hover { background: #FDE047; border-color: rgba(253,224,71,0.9); color: #111; }
+    .contact-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: inherit;
+      text-decoration: none;
+    }
+    .contact-ico {
+      flex: none;
+      width: 2.25rem; height: 2.25rem;
+      border-radius: 9999px;
+      display: flex; align-items: center; justify-content: center;
+      background: #111;
+      color: #FDE047;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .contact-ico svg { width: 1.05rem; height: 1.05rem; stroke-width: 1.5; }
+    .contact-text { display: flex; flex-direction: column; min-width: 0; }
+    .contact-label { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.5); transition: color 0.35s ease; }
+    .contact-value { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .contact-row:hover .contact-label { color: rgba(17,17,17,0.65); }
+    .copy-btn {
+      flex: none;
+      font-size: 0.72rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 9999px;
+      color: inherit;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.25);
+      cursor: pointer;
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+    .contact-row:hover .copy-btn { border-color: rgba(17,17,17,0.35); }
+    .copy-btn:hover { background: #111; color: #FDE047; border-color: #111; }
+    .copy-btn.is-done { background: #111; color: #FDE047; border-color: #111; }
+
+    /* ============================================================
+       АДАПТИВНОСТЬ ПОД ВСЕ ЭКРАНЫ И МАСШТАБЫ
+       ============================================================ */
+
+    /* Высота экрана с учётом выезжающих панелей браузера на телефонах */
+    html body .min-h-screen { min-height: 100vh; min-height: 100svh; }
+
+    /* Hero: заголовок и фото плавно масштабируются */
+    .hero-title {
+      font-size: clamp(1.9rem, 9.5vw, 4.5rem);
+      line-height: 1.05;
+      text-wrap: balance;
+    }
+    .avatar-soft {
+      width: clamp(104px, 30vw, 160px);
+      height: auto;
+    }
+
+    /* Проекты: 1 колонка → 2 колонки (третья по центру) → 3 колонки */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      max-width: 34rem;
+      margin: 0 auto;
+    }
+    @media (min-width: 700px) {
+      .projects-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: none;
+        gap: 1.75rem;
+      }
+      .projects-grid > :nth-child(3) {
+        grid-column: 1 / -1;
+        justify-self: center;
+        width: calc(50% - 0.875rem);
+      }
+    }
+    @media (min-width: 1100px) {
+      .projects-grid { grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
+      .projects-grid > :nth-child(3) {
+        grid-column: auto;
+        justify-self: stretch;
+        width: auto;
+      }
+    }
+
+    /* Низкие ноутбучные экраны: блок технологий всё равно помещается без прокрутки */
+    @media (min-width: 1024px) and (max-height: 820px) {
+      .tech-grid { gap: 1rem; }
+      .tech-card { padding: 1rem 1.25rem; gap: 0.5rem; }
+      .tech-icon { width: 2.2rem; height: 2.2rem; }
+      .tech-icon svg { width: 1.05rem; height: 1.05rem; }
+      .tech-card p { font-size: 0.76rem; line-height: 1.45; }
+    }
+
+    /* Шапка на узких экранах */
+    @media (max-width: 400px) {
+      .contact-btn .cb-icon { display: none; }
+    }
+
+    /* Подсказка над фото на небольших экранах: внутри фото, чтобы не вылезала за край */
+    @media (max-width: 600px) {
+      .avatar-hint {
+        left: 50%;
+        top: auto;
+        bottom: 6px;
+        transform: translate(-50%, 6px);
+      }
+      .avatar-wrap:hover .avatar-hint,
+      #avatar:focus-visible + .avatar-hint {
+        transform: translate(-50%, 0);
+      }
+    }
+
+    /* Окно контактов: прокручивается на низких экранах, не обрезается */
+    .contact-modal {
+      overflow-y: auto;
+      align-items: flex-start;
+      padding: 1rem;
+    }
+    .contact-panel.liquid-glass { margin: auto; }
+    @media (max-width: 480px) {
+      .contact-panel.liquid-glass {
+        padding: 1.5rem 1.1rem 1.25rem;
+        border-radius: 1.4rem;
+      }
+      #contactTitle { font-size: 1.6rem; padding-right: 2rem; }
+      .contact-row { padding: 0.6rem 0.75rem; gap: 0.5rem; }
+      .contact-ico { width: 2rem; height: 2rem; }
+      .copy-btn { padding: 0.35rem 0.6rem; }
+    }
+
+    /* Заголовок секции появляется плавно */
+    .reveal-up {
+      opacity: 0;
+      transform: translateY(12px);
+      filter: blur(4px);
+      transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s ease;
+    }
+    .reveal-up.is-visible { opacity: 1; transform: none; filter: none; }
+
+    /* Уважаем настройку «уменьшить анимацию» */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .wave { animation: none; }
+      .tech-card, .reveal-up { opacity: 1; transform: none; filter: none; transition: background-color 0.3s, box-shadow 0.3s; }
+      .tech-card:hover::after { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="relative min-h-screen bg-black">
+    <video id="bg" class="fixed inset-0 w-full h-full object-cover translate-y-[17%] pointer-events-none"
+      src="2fa14700_5b4c_40d4_be10_0e58585e9034_u2_45ba8d6e_9dba_4662_a50f.mp4"
+      muted autoplay playsinline preload="auto" style="opacity:0"></video>
+
+    <div class="relative z-10 flex flex-col min-h-screen">
+      <!-- Navigation (Зафиксированная шапка) -->
+      <nav class="sticky top-0 z-50 py-1 backdrop-blur-md bg-black/40 border-b border-white/5 transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-8">
+            <div class="flex items-center gap-2 text-white font-semibold text-base sm:text-lg whitespace-nowrap">
+              <svg class="icon" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg> A.PETRALAI
+            </div>
+            <div class="hidden md:flex items-center gap-8">
+              <a href="#projects" class="nav-link">Проекты</a>
+              <a href="#technologies" class="nav-link">Технологии</a>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <button id="contactBtn" type="button" aria-haspopup="dialog"
+                    class="contact-btn liquid-glass rounded-full px-4 sm:px-6 py-2 text-white text-xs sm:text-sm font-medium">
+              <span class="cb-fill" aria-hidden="true"></span>
+              <span class="cb-content">
+                <span class="cb-dot" aria-hidden="true"></span>
+                <span>Связаться</span>
+                <svg class="icon cb-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+              </span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Hero -->
+      <main class="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 text-center">
+        <div class="mb-2 avatar-wrap">
+          <img id="avatar" src="я.jpg" alt="Anastasia Petrolay" tabindex="0" role="button"
+               aria-label="Нажми, чтобы посыпались цветочки"
+               class="avatar-soft rounded-full object-cover cursor-pointer" />
+          <span class="avatar-hint" aria-hidden="true"><span class="avatar-hint-icon">✿</span><span id="avatarHintText">Нажми на меня</span></span>
+        </div>
+        <p class="text-white/70 text-xs md:text-sm tracking-[0.3em] uppercase mb-4">Front-end Developer</p>
+        <h1 class="hero-title text-white mb-5 tracking-tight"
+            style="font-family: 'Instrument Serif', serif;">Anastasia Petralai</h1>
+
+        <div class="max-w-xl w-full space-y-8">
+          <p class="hero-lead text-white/90 text-base md:text-lg font-medium leading-relaxed px-4">
+            Я создаю быстрые, доступные и красивые интерфейсы. Смотри мои проекты ниже и вместе начнем делать красоту!
+          </p>
+          <div class="flex justify-center">
+            <a href="#projects" class="bg-white rounded-full px-8 py-3 text-black text-sm font-medium hover:bg-white/90 inline-block transition">Мои Проекты</a>
+          </div>
+        </div>
+      </main>
+
+      <!-- Projects Section -->
+      <section id="projects" class="relative z-10 pt-14 md:pt-20 pb-12 md:pb-16 max-w-7xl mx-auto px-4 sm:px-6 w-full">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl text-white text-center mb-8 md:mb-12 tracking-tight"
+            style="font-family: 'Instrument Serif', serif;">Мои Проекты</h2>
+
+        <div class="projects-grid">
+
+          <!-- Карточка 1 -->
+          <div class="project-card liquid-glass rounded-3xl overflow-hidden flex-1 flex flex-col justify-between">
+            <div class="h-44 w-full relative overflow-hidden border-b border-white/10">
+              <img src="Mood-to-Movie Oracle@2x.png" alt="Кино-предсказатель настроения" class="card-img w-full h-full object-cover absolute inset-0" />
+            </div>
+            <div class="p-6 sm:p-8 flex flex-col items-center text-center flex-1 justify-between">
+              <div>
+                <h3 class="text-xl text-white font-semibold mb-3 tracking-wide">Кинопредикт</h3>
+                <p class="text-white text-sm leading-relaxed mb-4">
+                  Интерактивное веб-приложение, где пользователь выбирает свой вайб и смайлик, а генератор подбирает атмосферный фильм с цитатой и плейлистом.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Карточка 2 -->
+          <div class="project-card liquid-glass rounded-3xl overflow-hidden flex-1 flex flex-col justify-between">
+            <div class="h-44 w-full relative overflow-hidden border-b border-white/10">
+              <img src="Retro Poster Creator@2x.png" alt="Генератор ретро-постеров" class="card-img w-full h-full object-cover absolute inset-0" />
+            </div>
+            <div class="p-6 sm:p-8 flex flex-col items-center text-center flex-1 justify-between">
+              <div>
+                <h3 class="text-xl text-white font-semibold mb-3 tracking-wide">Генератор ретро-постеров</h3>
+                <p class="text-white text-sm leading-relaxed mb-4">
+                  Создавай цифровые постеры в стиле 80–90-х: выбирай шрифты, неоновые рамки, накладывай стикеры, добавляй текст с изгибом и качай результат.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Карточка 3 -->
+          <div class="project-card liquid-glass rounded-3xl overflow-hidden flex-1 flex flex-col justify-between">
+            <div class="h-44 w-full relative overflow-hidden border-b border-white/10">
+              <img src="Local Cyber-Cat@2x.png" alt="Веб-игра «Котик-Тамагочи»" class="card-img w-full h-full object-cover absolute inset-0" />
+            </div>
+            <div class="p-6 sm:p-8 flex flex-col items-center text-center flex-1 justify-between">
+              <div>
+                <h3 class="text-xl text-white font-semibold mb-3 tracking-wide">Веб-игра «Котик-Тамагочи»</h3>
+                <p class="text-white text-sm leading-relaxed mb-4">
+                  Современный тамагочи. Корми виртуального питомца, развлекай мини-играми и укладывай спать с сохранением состояния.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Technologies Section (секция 3) -->
+      <section id="technologies" class="tech-section">
+        <!-- Волнистый разделитель между секциями -->
+        <div class="wave-divider" aria-hidden="true">
+          <div class="wave wave-1"></div>
+          <div class="wave wave-2"></div>
+          <div class="wave wave-3"></div>
+        </div>
+        <div class="tech-bg" aria-hidden="true">
+          <div class="tech-glow" style="width:380px;height:380px;top:-120px;right:-100px;"></div>
+          <div class="tech-glow" style="width:320px;height:320px;bottom:-120px;left:-100px;"></div>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-10 w-full">
+          <div class="text-center mb-8 reveal-up">
+
+            <h2 class="text-3xl md:text-4xl tracking-tight text-[#111]"
+                style="font-family: 'Instrument Serif', serif;">Технологии, которыми я владею</h2>
+          </div>
+
+          <div class="tech-grid">
+
+            <!-- HTML5 -->
+            <div class="tech-card" style="--i:0">
+              <div class="tech-icon">
+                <svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              </div>
+              <div>
+                <h3 class="mb-2">HTML5</h3>
+                <p>Семантическая и доступная вёрстка: правильная структура страниц, формы, мультимедиа и аккуратная работа с атрибутами</p>
+              </div>
+              <span class="tech-line"></span>
+            </div>
+
+            <!-- CSS3 -->
+            <div class="tech-card" style="--i:1">
+              <div class="tech-icon">
+                <svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+              </div>
+              <div>
+                <h3 class="mb-2">CSS3</h3>
+                <p>Flexbox, Grid, переменные, трансформации и плавные анимации. Создаю стильные интерфейсы в едином визуальном стиле</p>
+              </div>
+              <span class="tech-line"></span>
+            </div>
+
+            <!-- JavaScript -->
+            <div class="tech-card" style="--i:2">
+              <div class="tech-icon">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5a2 2 0 0 1 2-2 2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>
+              </div>
+              <div>
+                <h3 class="mb-2">JavaScript</h3>
+                <p>Работа с DOM, событиями и localStorage, асинхронный код. На нём построены мои интерактивные проекты и игры</p>
+              </div>
+              <span class="tech-line"></span>
+            </div>
+
+            <!-- Tailwind CSS -->
+            <div class="tech-card" style="--i:3">
+              <div class="tech-icon">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>
+              </div>
+              <div>
+                <h3 class="mb-2">Tailwind CSS</h3>
+                <p>Быстро собираю современные адаптивные макеты на утилитарных классах и добавляю собственные стили для деталей</p>
+              </div>
+              <span class="tech-line"></span>
+            </div>
+
+            <!-- Git & GitHub -->
+            <div class="tech-card" style="--i:4">
+              <div class="tech-icon">
+                <svg class="icon" viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+              </div>
+              <div>
+                <h3 class="mb-2">Git и GitHub</h3>
+                <p>Веду историю изменений, работаю с ветками и репозиториями, публикую сайты на GitHub Pages</p>
+              </div>
+              <span class="tech-line"></span>
+            </div>
+
+            <!-- Адаптивная вёрстка -->
+            <div class="tech-card" style="--i:5">
+              <div class="tech-icon">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+              </div>
+              <div>
+                <h3 class="mb-2">Адаптивная вёрстка</h3>
+                <p>Mobile-first подход и медиазапросы: сайт одинаково удобен на телефоне, планшете и большом мониторе</p>
+              </div>
+              <span class="tech-line"></span>
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Окно контактов -->
+  <div id="contactModal" class="contact-modal" role="dialog" aria-modal="true" aria-labelledby="contactTitle" aria-hidden="true">
+    <div class="contact-panel liquid-glass">
+      <button type="button" id="contactClose" class="contact-close" aria-label="Закрыть">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </button>
+
+      <p class="text-white/60 text-xs tracking-[0.3em] uppercase mb-3">Контакты</p>
+      <h3 id="contactTitle" class="text-3xl text-white mb-2 tracking-tight" style="font-family: 'Instrument Serif', serif;">Давай сделаем что-нибудь красивое</h3>
+      <p class="text-white/70 text-sm mb-6">Выбирай удобный способ связи. Можно перейти по ссылке или скопировать контакт.</p>
+
+      <div class="flex flex-col gap-3">
+        <!-- TODO: замени контакты на свои -->
+        <div class="contact-row">
+          <a class="contact-main" href="mailto:anastasia@example.com">
+            <span class="contact-ico"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+            <span class="contact-text"><span class="contact-label">Почта</span><span class="contact-value">anastasiapetrolay@gmail.com</span></span>
+          </a>
+          <button type="button" class="copy-btn" data-copy="anastasia@example.com">Копировать</button>
+        </div>
+
+        <div class="contact-row">
+          <a class="contact-main" href="https://t.me/your_username" target="_blank" rel="noopener noreferrer">
+            <span class="contact-ico"><svg class="icon" viewBox="0 0 24 24"><path d="m22 2-11 11"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></span>
+            <span class="contact-text"><span class="contact-label">Telegram</span><span class="contact-value">@just_nastya03</span></span>
+          </a>
+          <button type="button" class="copy-btn" data-copy="@your_username">Копировать</button>
+        </div>
+
+        <div class="contact-row">
+          <a class="contact-main" href="https://github.com/your-username" target="_blank" rel="noopener noreferrer">
+            <span class="contact-ico"><svg class="icon" viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg></span>
+            <span class="contact-text"><span class="contact-label">GitHub</span><span class="contact-value">github.com/justnastya</span></span>
+          </a>
+          <button type="button" class="copy-btn" data-copy="https://github.com/your-username">Копировать</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const video = document.getElementById('bg');
+    const FADE_MS = 500, FADE_OUT_REMAINING = 0.55;
+    let rafId = null, fadingOut = false;
+
+    function cancelFade() { if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; } }
+
+    function fadeTo(target, duration = FADE_MS) {
+      cancelFade();
+      const startOpacity = parseFloat(video.style.opacity || '0');
+      const startTime = performance.now();
+      const tick = (now) => {
+        const t = Math.min((now - startTime) / duration, 1);
+        video.style.opacity = String(startOpacity + (target - startOpacity) * t);
+        rafId = t < 1 ? requestAnimationFrame(tick) : null;
+      };
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function onLoaded() {
+      fadingOut = false;
+      video.play().catch(() => {});
+      fadeTo(1);
+    }
+    video.addEventListener('loadeddata', onLoaded);
+    if (video.readyState >= 2) onLoaded();
+
+    video.addEventListener('timeupdate', () => {
+      if (!video.duration || fadingOut) return;
+      if (video.duration - video.currentTime <= FADE_OUT_REMAINING) {
+        fadingOut = true;
+        fadeTo(0);
+      }
+    });
+
+    video.addEventListener('ended', () => {
+      cancelFade();
+      video.style.opacity = '0';
+      setTimeout(() => {
+        video.currentTime = 0;
+        fadingOut = false;
+        video.play().catch(() => {});
+        fadeTo(1);
+      }, 100);
+    });
+
+    // --- Плавное появление элементов секции 3 при прокрутке ---
+    (function () {
+      const items = document.querySelectorAll('.tech-card, .reveal-up');
+      if (!('IntersectionObserver' in window)) {
+        items.forEach((el) => el.classList.add('is-visible'));
+        return;
+      }
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+      items.forEach((el) => io.observe(el));
+    })();
+
+    // --- Рамка из цветочков вокруг карточки по клику ---
+    (function () {
+      const INSET = 11;      // отступ рамки от края карточки, px
+      const STEP = 26;       // расстояние между цветочками, px
+      const colors = ['#FDE047', '#FACC15', '#FEF08A', '#EAB308'];
+
+      // Точки по периметру скруглённого прямоугольника
+      function perimeterPoints(w, h, r, step) {
+        const top = Math.max(w - 2 * r, 0);
+        const side = Math.max(h - 2 * r, 0);
+        const arc = Math.PI * r / 2;
+        const total = 2 * top + 2 * side + 4 * arc;
+        const n = Math.max(Math.round(total / step), 8);
+        const pts = [];
+        for (let i = 0; i < n; i++) {
+          let d = (i * total) / n, x, y, a;
+          if (d < top)                  { x = r + d; y = 0; }
+          else if ((d -= top) < arc)    { a = d / r; x = w - r + Math.sin(a) * r; y = r - Math.cos(a) * r; }
+          else if ((d -= arc) < side)   { x = w; y = r + d; }
+          else if ((d -= side) < arc)   { a = d / r; x = w - r + Math.cos(a) * r; y = h - r + Math.sin(a) * r; }
+          else if ((d -= arc) < top)    { x = w - r - d; y = h; }
+          else if ((d -= top) < arc)    { a = d / r; x = r - Math.sin(a) * r; y = h - r + Math.cos(a) * r; }
+          else if ((d -= arc) < side)   { x = 0; y = h - r - d; }
+          else                          { d -= side; a = d / r; x = r - Math.cos(a) * r; y = r - Math.sin(a) * r; }
+          pts.push([x, y]);
+        }
+        return pts;
+      }
+
+      function flowerSVG(color) {
+        return `
+          <svg viewBox="0 0 32 32" fill="none">
+            <g transform="translate(16,16)" stroke="#B45309" stroke-width="1.2" stroke-linejoin="round">
+              <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" />
+              <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" transform="rotate(72)" />
+              <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" transform="rotate(144)" />
+              <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" transform="rotate(216)" />
+              <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" transform="rotate(288)" />
+              <circle cx="0" cy="0" r="3.4" fill="#B45309" stroke="none" />
+              <circle cx="-0.8" cy="-0.8" r="1.2" fill="#F59E0B" stroke="none" />
+            </g>
+          </svg>`;
+      }
+
+      function buildFrame(card) {
+        const old = card.querySelector('.flower-frame');
+        if (old) old.remove();
+
+        const frame = document.createElement('div');
+        frame.className = 'flower-frame';
+        frame.setAttribute('aria-hidden', 'true');
+
+        const w = card.clientWidth - INSET * 2;
+        const h = card.clientHeight - INSET * 2;
+        const radius = Math.max(24 - INSET, 8);
+        const pts = perimeterPoints(w, h, radius, STEP);
+
+        pts.forEach(([x, y], i) => {
+          const f = document.createElement('span');
+          f.className = 'frame-flower';
+          const size = i % 2 === 0 ? 20 : 15;
+          f.style.width = f.style.height = size + 'px';
+          f.style.left = (x + INSET) + 'px';
+          f.style.top = (y + INSET) + 'px';
+          f.style.setProperty('--r', ((i * 47) % 90) + 'deg');
+          f.style.setProperty('--d', (i * 18) + 'ms');
+          f.innerHTML = flowerSVG(colors[i % colors.length]);
+          frame.appendChild(f);
+        });
+        card.appendChild(frame);
+      }
+
+      function removeFrame(card) {
+        card.classList.remove('is-framed');
+        const frame = card.querySelector('.flower-frame');
+        if (!frame) return;
+        frame.classList.add('is-leaving');
+        setTimeout(() => frame.remove(), 380);
+      }
+
+      function showFrame(card) {
+        card.classList.add('is-framed');
+        buildFrame(card);
+      }
+
+      document.querySelectorAll('.tech-card').forEach((card) => {
+        card.setAttribute('tabindex', '0');   // чтобы рамка появлялась и при навигации с клавиатуры
+        card.addEventListener('mouseenter', () => showFrame(card));
+        card.addEventListener('mouseleave', () => removeFrame(card));
+        card.addEventListener('focus', () => { if (card.matches(':focus-visible')) showFrame(card); });
+        card.addEventListener('blur', () => removeFrame(card));
+      });
+
+      // Пересобираем рамку при изменении размера окна
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          document.querySelectorAll('.tech-card.is-framed').forEach(buildFrame);
+        }, 150);
+      });
+    })();
+
+    // --- Цветочный дождь по всему сайту при нажатии на фото ---
+    (function () {
+      const avatar = document.getElementById('avatar');
+      if (!avatar) return;
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const colors = ['#FDE047', '#FACC15', '#FEF08A', '#EAB308'];
+      let cooling = false;
+
+      function flowerMarkup(color) {
+        return `
+          <svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" style="display:block">
+            <g transform="translate(16,16)" stroke="#B45309" stroke-width="1" stroke-linejoin="round">
+              <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" />
+              <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" transform="rotate(72)" />
+              <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" transform="rotate(144)" />
+              <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" transform="rotate(216)" />
+              <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" transform="rotate(288)" />
+              <circle cx="0" cy="0" r="3.4" fill="#B45309" stroke="none" />
+              <circle cx="-0.8" cy="-0.8" r="1.2" fill="#F59E0B" stroke="none" />
+            </g>
+          </svg>`;
+      }
+
+      function spawnRain() {
+        const count = Math.min(60, Math.max(24, Math.round((innerWidth * innerHeight) / 22000)));
+        for (let i = 0; i < count; i++) {
+          const f = document.createElement('div');
+          const size = 18 + Math.random() * 28;
+          f.className = 'rain-flower';
+          f.style.width = f.style.height = size + 'px';
+          f.style.left = Math.random() * innerWidth + 'px';
+          f.style.top = Math.random() * innerHeight + 'px';
+          f.style.setProperty('--d', (Math.random() * 1.2).toFixed(2) + 's');
+          f.style.setProperty('--dur', (4 + Math.random() * 2.5).toFixed(2) + 's');
+          f.style.setProperty('--sx', ((Math.random() - 0.5) * 80).toFixed(0) + 'px');
+          f.style.setProperty('--sy', (30 + Math.random() * 70).toFixed(0) + 'px');
+          f.style.setProperty('--rot', (90 + Math.random() * 150).toFixed(0) + 'deg');
+          f.innerHTML = flowerMarkup(colors[Math.floor(Math.random() * colors.length)]);
+          document.body.appendChild(f);
+          f.addEventListener('animationend', () => f.remove());
+        }
+      }
+
+      const hintText = document.getElementById('avatarHintText');
+
+      function trigger() {
+        if (cooling || reduceMotion) return;
+        cooling = true;
+        spawnRain();
+        if (hintText) hintText.textContent = 'Цветочки для тебя!';
+        setTimeout(() => {
+          cooling = false;
+          if (hintText) hintText.textContent = 'Нажми на меня';
+        }, 2500);
+      }
+
+      avatar.addEventListener('click', trigger);
+      avatar.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          trigger();
+        }
+      });
+    })();
+
+    // --- Кнопка «Связаться»: магнит, чернильная заливка, окно контактов ---
+    (function () {
+      const btn = document.getElementById('contactBtn');
+      const modal = document.getElementById('contactModal');
+      const closeBtn = document.getElementById('contactClose');
+      if (!btn || !modal) return;
+      let lastFocus = null;
+
+      // Заливка растёт из точки входа курсора
+      function setOrigin(e) {
+        const r = btn.getBoundingClientRect();
+        btn.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        btn.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      }
+      btn.addEventListener('mouseenter', setOrigin);
+      btn.addEventListener('mouseleave', (e) => {
+        setOrigin(e);
+        btn.style.transform = '';
+      });
+      // «Магнитное» притяжение к курсору
+      btn.addEventListener('mousemove', (e) => {
+        const r = btn.getBoundingClientRect();
+        const dx = (e.clientX - (r.left + r.width / 2)) * 0.2;
+        const dy = (e.clientY - (r.top + r.height / 2)) * 0.3;
+        btn.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
+      });
+
+      function burstFrom(x, y) {
+        for (let i = 0; i < 7; i++) {
+          setTimeout(() => {
+            createFlower(x + (Math.random() - 0.5) * 140, y + (Math.random() - 0.5) * 50, true);
+          }, i * 70);
+        }
+      }
+
+      function openModal() {
+        lastFocus = document.activeElement;
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        const r = btn.getBoundingClientRect();
+        burstFrom(r.left + r.width / 2, r.top + r.height + 20);
+        setTimeout(() => closeBtn.focus(), 50);
+      }
+
+      function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+      }
+
+      btn.addEventListener('click', openModal);
+      closeBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+      });
+
+      // Копирование контактов
+      modal.querySelectorAll('.copy-btn').forEach((b) => {
+        b.addEventListener('click', async () => {
+          const text = b.dataset.copy;
+          try {
+            await navigator.clipboard.writeText(text);
+          } catch (_) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); } catch (__) {}
+            ta.remove();
+          }
+          b.textContent = 'Скопировано ✓';
+          b.classList.add('is-done');
+          const r = b.getBoundingClientRect();
+          burstFrom(r.left + r.width / 2, r.top);
+          setTimeout(() => { b.textContent = 'Копировать'; b.classList.remove('is-done'); }, 1600);
+        });
+      });
+    })();
+
+    // --- Интерактивные жёлтые цветы ---
+    const petalColors = ['#FDE047', '#FACC15', '#FEF08A', '#EAB308'];
+
+    function createFlower(x, y, isClick = false) {
+      const flower = document.createElement('div');
+      flower.className = 'flower-particle';
+      flower.style.left = `${x}px`;
+      flower.style.top = `${y}px`;
+
+      const size = isClick ? Math.random() * 14 + 34 : Math.random() * 8 + 14;
+      const color = petalColors[Math.floor(Math.random() * petalColors.length)];
+
+      flower.innerHTML = `
+        <svg width="${size}" height="${size}" viewBox="0 0 32 32" fill="none">
+          <g transform="translate(16,16)">
+            <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" />
+            <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" transform="rotate(72)" />
+            <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" transform="rotate(144)" />
+            <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" transform="rotate(216)" />
+            <ellipse cx="0" cy="-7.5" rx="3.8" ry="6.5" fill="${color}" transform="rotate(288)" />
+            <circle cx="0" cy="0" r="3.4" fill="#B45309" />
+            <circle cx="-0.8" cy="-0.8" r="1.2" fill="#F59E0B" />
+          </g>
+        </svg>
+      `;
+
+      if (isClick) {
+        flower.style.animation = 'flowerBloom 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards';
+      } else {
+        const dx = (Math.random() - 0.5) * 26;
+        const dy = (Math.random() - 0.5) * 26;
+        flower.style.setProperty('--dx', `${dx}px`);
+        flower.style.setProperty('--dy', `${dy}px`);
+        flower.style.animation = 'flowerTrail 0.85s ease-out forwards';
+      }
+
+      document.body.appendChild(flower);
+      flower.addEventListener('animationend', () => flower.remove());
+    }
+
+    // След при движении курсора (с ограничением частоты, чтобы не перегружать DOM)
+    let lastTrailTime = 0;
+    let lastX = 0;
+    let lastY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      const now = performance.now();
+      const dist = Math.hypot(e.clientX - lastX, e.clientY - lastY);
+
+      if (now - lastTrailTime > 38 && dist > 8) {
+        lastTrailTime = now;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        createFlower(e.clientX, e.clientY, false);
+      }
+    });
+
+    // Крупный цветок при клике в любое место
+    document.addEventListener('click', (e) => {
+      createFlower(e.clientX, e.clientY, true);
+    });
+  </script>
+</body>
+</html>
